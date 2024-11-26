@@ -14,19 +14,19 @@ public class Skills {
   @Inject
   Client client;
 
-  private final Map<Skill, Integer> skillMap = new HashMap<>();
-
-  public Object get() {
-    return skillMap;
+  public Map<Skill, Integer> getSkillExperience() {
+    final Map<Skill, Integer> skillXpMap = new HashMap<>();
+    for (Skill skill : Skill.values()) {
+      skillXpMap.put(skill, this.client.getSkillExperience(skill));
+    }
+    return skillXpMap;
   }
 
-  public Map<Skill, Integer> update() {
-    skillMap.clear();
-
+  public Map<Skill, Integer> getSkillLevels() {
+    final Map<Skill, Integer> skillLevelMap = new HashMap<>();
     for (Skill skill : Skill.values()) {
-      skillMap.put(skill, client.getSkillExperience(skill));
+      skillLevelMap.put(skill, this.client.getRealSkillLevel(skill));
     }
-
-    return skillMap;
+    return skillLevelMap;
   }
 }

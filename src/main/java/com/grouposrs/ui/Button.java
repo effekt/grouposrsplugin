@@ -43,16 +43,16 @@ public class Button {
       @Override
       public void mouseEntered(java.awt.event.MouseEvent mouseEvent)
       {
-        button.setBackground(ColorScheme.DARK_GRAY_HOVER_COLOR);
+        Button.this.button.setBackground(ColorScheme.DARK_GRAY_HOVER_COLOR);
       }
 
       @Override
       public void mouseExited(java.awt.event.MouseEvent mouseEvent)
       {
-        button.setBackground(ColorScheme.DARK_GRAY_COLOR);
+        Button.this.button.setBackground(ColorScheme.DARK_GRAY_COLOR);
       }
     });
 
-    panel.add(this.button);
+    this.panel.add(this.button);
   }
 }
