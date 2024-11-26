@@ -44,7 +44,7 @@ public class Api {
     RequestBody body = RequestBody.create(JSON, updates);
     Request request = new Request.Builder()
         .url(PUBLIC_BASE_URL + "/player/update")
-        .header("Authorization", "Bearer " + this.config.loginToken())
+        .header("Authorization", getAuthorizationHeader())
         .header("User-Agent", USER_AGENT)
         .post(body)
         .build();
@@ -93,7 +93,7 @@ public class Api {
   public JsonObject getTrackedPlayers() {
     Request request = new Request.Builder()
         .url(PUBLIC_BASE_URL + "/player/track")
-        .header("Authorization", "Bearer " + this.config.loginToken())
+        .header("Authorization", this.getAuthorizationHeader())
         .header("User-Agent", USER_AGENT)
         .get()
         .build();
@@ -137,5 +137,7 @@ public class Api {
     return null;
   }
 
-
+  public String getAuthorizationHeader() {
+    return "Bearer " + this.config.loginToken();
+  }
 }
