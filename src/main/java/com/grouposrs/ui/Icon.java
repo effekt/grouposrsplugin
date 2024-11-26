@@ -47,14 +47,14 @@ public enum Icon {
    * @return {@link BufferedImage} of the icon
    */
   public BufferedImage getImage() {
-    return ImageUtil.loadImageResource(GroupOSRSPlugin.class, file);
+    return ImageUtil.loadImageResource(GroupOSRSPlugin.class, this.file);
   }
 
   /**
    * @return the {@link ImageIcon} with no modifications. Equivalent to {@code getIcon(UnaryOperator.identity())}
    */
   public ImageIcon getIcon() {
-    return getIcon(UnaryOperator.identity());
+    return this.getIcon(UnaryOperator.identity());
   }
 
   /**
@@ -67,7 +67,7 @@ public enum Icon {
    * @return the modified {@link ImageIcon}
    */
   public ImageIcon getIcon(@Nonnull UnaryOperator<BufferedImage> func) {
-    BufferedImage img = func.apply(getImage());
+    BufferedImage img = func.apply(this.getImage());
     return new ImageIcon(img);
   }
 }

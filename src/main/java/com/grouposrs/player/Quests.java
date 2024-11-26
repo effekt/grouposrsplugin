@@ -21,19 +21,19 @@ public class Quests {
   private boolean shouldUpdateQuests = true;
 
   public Object get() {
-    return questStateMap;
+    return this.questStateMap;
   }
 
   public void update() {
-    if (!shouldUpdateQuests)
+    if (!this.shouldUpdateQuests)
       return;
 
-    shouldUpdateQuests = false;
-    questStateMap.clear();
+    this.shouldUpdateQuests = false;
+    this.questStateMap.clear();
 
     for (Quest quest : Quest.values()) {
-      QuestState state = quest.getState(client);
-      questStateMap.put(quest.getId(), state);
+      QuestState state = quest.getState(this.client);
+      this.questStateMap.put(quest.getId(), state);
     }
   }
 }

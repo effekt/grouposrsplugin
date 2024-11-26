@@ -1,8 +1,11 @@
 package com.grouposrs.player;
 
-import com.grouposrs.GroupOSRSConfig;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.grouposrs.GroupOSRSPlugin;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.Client;
 import net.runelite.api.GameState;
 
 import javax.inject.Inject;
@@ -13,36 +16,65 @@ import java.util.Map;
 @Slf4j
 @Singleton
 public class Player {
-  @Inject
-  private Client client;
-  @Inject
-  private Skills skills;
-  @Inject
-  private Quests quests;
-  @Inject
-  private GroupOSRSConfig config;
+  private final GroupOSRSPlugin plugin;
+  private Gson gson;
 
-  private transient String playerName = "";
+  @Getter
+  private String playerName = "";
+  private final Map<String, Object> updates = new HashMap<>();
+  private final JsonArray trackedPlayers = new JsonArray();
+
+  @Inject
+  public Player(GroupOSRSPlugin plugin) {
+    this.plugin = plugin;
+  }
 
   public Object getPlayer() {
-    Map<String, Object> player = new HashMap<>();
-    player.put("player_name", playerName);
-    player.put("skills", skills.update());
-    player.put("quests", quests.get());
+    final Map<String, Object> player = new HashMap<>();
+    player.put("player_name", this.playerName);
+    player.put("skill_level", this.plugin.getSkills().getSkillLevels());
+    player.put("skill_xp", this.plugin.getSkills().getSkillExperience());
+    player.put("quests", this.plugin.getQuests().get());
 
     return player;
   }
 
   public void init() {
-    String playerName = client.getLocalPlayer().getName();
+    if (this.trackedPlayers.size() == 0) {
+      final JsonObject getTrackedPlayersResponse = this.plugin.getApi().getTrackedPlayers();
 
-    if (!isLoggedIn() || this.playerName.equals(playerName))
-      return;
+      this.trackedPlayers.addAll(getTrackedPlayersResponse
+          .get("data")
+          .getAsJsonObject()
+          .get("players")
+          .getAsJsonArray());
+    }
 
-    this.playerName = playerName;
+    try {
+      final String clientPlayerName = this.plugin.getClient().getLocalPlayer().getName();
+      if (!this.isLoggedIn() || this.playerName.equals(clientPlayerName))
+        return;
+
+      this.playerName = clientPlayerName;
+    } catch (Exception _exception) {}
   }
 
   public boolean isLoggedIn() {
-    return client.getGameState() == GameState.LOGGED_IN && client.getLocalPlayer() != null;
+    return this.plugin.getClient().getGameState() == GameState.LOGGED_IN && this.plugin.getClient().getLocalPlayer() != null;
+  }
+
+  public void addUpdate(String key, Object update) {
+    this.updates.put(key, update);
+  }
+
+  public void postUpdates() {
+    if (this.updates.isEmpty())
+      return;
+
+    this.plugin.getApi().updatePlayer(this.gson.toJson(this.updates));
+  }
+
+  public JsonObject trackPlayer() {
+    return this.plugin.getApi().addTrackedPlayer(this.getPlayer());
   }
 }

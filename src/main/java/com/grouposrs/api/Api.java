@@ -2,7 +2,6 @@ package com.grouposrs.api;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.grouposrs.GroupOSRSConfig;
 import com.grouposrs.player.Player;
 import lombok.extern.slf4j.Slf4j;
@@ -36,25 +35,29 @@ public class Api {
   private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
   private static final String USER_AGENT = "GroupOSRS/0.0.1 " + "RuneLite/" + RuneLiteProperties.getVersion();
 
-  public void postToApi() {
-    Map<String, Object> updates = new HashMap<>();
-
-    RequestBody body = RequestBody.create(JSON, gson.toJson(player.getPlayer()));
-     log.info("{}", gson.toJson(player.getPlayer()));
+  /**
+   * Posts player updates to the API
+   *
+   * @param updates
+   */
+  public void updatePlayer(String updates) {
+    RequestBody body = RequestBody.create(JSON, updates);
     Request request = new Request.Builder()
-        .url(PUBLIC_BASE_URL + "/player")
-        .header("Authorization", config.loginToken())
-//        .header("User-Agent", USER_AGENT)
+        .url(PUBLIC_BASE_URL + "/player/update")
+        .header("Authorization", "Bearer " + this.config.loginToken())
+        .header("User-Agent", USER_AGENT)
         .post(body)
         .build();
-    Call call = okHttpClient.newCall(request);
+    Call call = this.okHttpClient.newCall(request);
 
     try (Response _response = call.execute()) {
-    } catch(Exception _exception) {}
+    } catch(Exception exception) {
+      log.info(exception.getMessage());
+    }
   }
 
   /**
-   * Attempts to validate user credentials
+   * Validates user credentials against the API
    *
    * @param uuid
    * @param secretPhrase
@@ -64,12 +67,12 @@ public class Api {
     credentials.put("uuid", uuid);
     credentials.put("secret_phrase", secretPhrase);
 
-    RequestBody body = RequestBody.create(JSON, gson.toJson(credentials));
+    RequestBody body = RequestBody.create(JSON, this.gson.toJson(credentials));
     Request request = new Request.Builder()
         .url(PUBLIC_BASE_URL + "/auth/login")
         .post(body)
         .build();
-    Call call = okHttpClient.newCall(request);
+    Call call = this.okHttpClient.newCall(request);
 
     try (Response response = call.execute()) {
       String responseBody = response.body().string();
@@ -81,4 +84,58 @@ public class Api {
 
     return null;
   }
+
+  /**
+   * Fetches tracked players from the API
+   *
+   * @return
+   */
+  public JsonObject getTrackedPlayers() {
+    Request request = new Request.Builder()
+        .url(PUBLIC_BASE_URL + "/player/track")
+        .header("Authorization", "Bearer " + this.config.loginToken())
+        .header("User-Agent", USER_AGENT)
+        .get()
+        .build();
+    Call call = this.okHttpClient.newCall(request);
+
+    try (Response response = call.execute()) {
+      String responseBody = response.body().string();
+      log.info(responseBody);
+      return new Gson().fromJson(responseBody, JsonObject.class);
+    } catch(Exception exception) {
+      log.info(exception.getMessage());
+    }
+
+    return null;
+  }
+
+  /**
+   * Adds player to be tracked
+   *
+   * @return
+   */
+  public JsonObject addTrackedPlayer(Object player) {
+    RequestBody body = RequestBody.create(JSON, this.gson.toJson(player));
+
+    Request request = new Request.Builder()
+        .url(PUBLIC_BASE_URL + "/player/track")
+        .header("Authorization", "Bearer " + this.config.loginToken())
+        .header("User-Agent", USER_AGENT)
+        .put(body)
+        .build();
+    Call call = this.okHttpClient.newCall(request);
+
+    try (Response response = call.execute()) {
+      String responseBody = response.body().string();
+      log.info(responseBody);
+      return new Gson().fromJson(responseBody, JsonObject.class);
+    } catch(Exception exception) {
+      log.info(exception.getMessage());
+    }
+
+    return null;
+  }
+
+
 }
